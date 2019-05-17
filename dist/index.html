@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+<!--  <script src="./vue.js"></script>-->
+  <style>
+  body {
+    font-size: 18px;
+  }
+  </style>
+  <!--  不符合在放在最后-->
+  <link rel="stylesheet" href="./small.css" media="(max-width: 400px)">
+  <!-- 符合条件立马加载 -->
+  <link rel="stylesheet" href="./index.css" media="(min-width: 400px)">
+<!--  <script src="./defer.js" defer></script>-->
+</head>
+<body>
+<div id="app" :style="{color: color}">
+  {{ message }}
+</div>
+<script type="module">
+debugger;
+// import Vue from './vue.esm.browser.js'
+// var app = new Vue({
+//   el: '#app',
+//   data: {
+//     color: 'red',
+//     message: 'Hello Vue!'
+//   },
+//   mounted() {
+//     setTimeout(() => {
+//       this.message = "Hello Vue New!";
+//       setTimeout(() => {
+//         this.color = "blue";
+//       }, 60);
+//     }, 50);
+//   }
+// })
+</script>
+<!-- 不必要的放后面 -->
+<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<!-- 下载完立即执行 -->
+<!--<script src="./index.js"></script>-->
+<script src="./async.js" async></script>
+</body>
+</html>
