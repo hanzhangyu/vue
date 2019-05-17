@@ -20,7 +20,7 @@
   {{ message }}
 </div>
 <script type="module">
-debugger;
+// debugger;
 // import Vue from './vue.esm.browser.js'
 // var app = new Vue({
 //   el: '#app',
@@ -38,10 +38,11 @@ debugger;
 //   }
 // })
 </script>
-<!-- 不必要的放后面 -->
-<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<div class="table"></div>
 <!-- 下载完立即执行 -->
-<!--<script src="./index.js"></script>-->
+<script src="./index.js"></script>
 <script src="./async.js" async></script>
+<!-- parse与js的evaluate取决于节点的位置 -->
+<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 </body>
 </html>
