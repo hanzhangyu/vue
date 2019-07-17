@@ -190,8 +190,8 @@ export function createComponent (
   const vnode = new VNode(
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
     data, undefined, undefined, undefined, context,
-    { Ctor, propsData, listeners, tag, children },
-    asyncFactory
+    { Ctor, propsData, listeners, tag, children }, // componentOptions
+    asyncFactory // componentInstance
   )
 
   // Weex specific: invoke recycle-list optimized @render function for

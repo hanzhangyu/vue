@@ -49,6 +49,7 @@ function sameVnode (a, b) {
   )
 }
 
+// 是否为相同的 <input>
 function sameInputType (a, b) {
   if (a.tag !== 'input') return true
   let i
@@ -57,6 +58,7 @@ function sameInputType (a, b) {
   return typeA === typeB || isTextInputType(typeA) && isTextInputType(typeB)
 }
 
+// Map<key, index>
 function createKeyToOldIdx (children, beginIdx, endIdx) {
   let i, key
   const map = {}
@@ -96,6 +98,7 @@ export function createPatchFunction (backend) {
     return remove
   }
 
+  // 标准的一个DOM删除函数
   function removeNode (el) {
     const parent = nodeOps.parentNode(el)
     // element may have already been removed due to v-html / v-text
@@ -122,6 +125,7 @@ export function createPatchFunction (backend) {
 
   let creatingElmInVPre = 0
 
+  // 创建节点至其父元素中，相应平台下的真实节点
   function createElm (
     vnode,
     insertedVnodeQueue,
@@ -148,7 +152,7 @@ export function createPatchFunction (backend) {
     const data = vnode.data
     const children = vnode.children
     const tag = vnode.tag
-    if (isDef(tag)) {
+    if (isDef(tag)) { // tag 存在时，直接创建，包含子节点的创建
       if (process.env.NODE_ENV !== 'production') {
         if (data && data.pre) {
           creatingElmInVPre++
@@ -166,7 +170,7 @@ export function createPatchFunction (backend) {
       vnode.elm = vnode.ns
         ? nodeOps.createElementNS(vnode.ns, tag)
         : nodeOps.createElement(tag, vnode)
-      setScope(vnode)
+      setScope(vnode) // css scope
 
       /* istanbul ignore if */
       if (__WEEX__) {
@@ -198,10 +202,10 @@ export function createPatchFunction (backend) {
       if (process.env.NODE_ENV !== 'production' && data && data.pre) {
         creatingElmInVPre--
       }
-    } else if (isTrue(vnode.isComment)) {
+    } else if (isTrue(vnode.isComment)) { // 如果是注释节点
       vnode.elm = nodeOps.createComment(vnode.text)
       insert(parentElm, vnode.elm, refElm)
-    } else {
+    } else { // 如果是文本节点
       vnode.elm = nodeOps.createTextNode(vnode.text)
       insert(parentElm, vnode.elm, refElm)
     }
@@ -358,14 +362,15 @@ export function createPatchFunction (backend) {
     }
   }
 
+  // 将区间内的vnode全部删除
   function removeVnodes (vnodes, startIdx, endIdx) {
     for (; startIdx <= endIdx; ++startIdx) {
       const ch = vnodes[startIdx]
       if (isDef(ch)) {
-        if (isDef(ch.tag)) {
+        if (isDef(ch.tag)) { // 触发组件钩子并删除
           removeAndInvokeRemoveHook(ch)
           invokeDestroyHook(ch)
-        } else { // Text node
+        } else { // Text node ， 文本节点直接删除
           removeNode(ch.elm)
         }
       }
@@ -401,7 +406,12 @@ export function createPatchFunction (backend) {
     }
   }
 
+  /**
+   * 处理子元素中的变动
+   * 如果什么优化都不做妥妥的O(n**2)，当然这里涉及了两个比较明显的优化
+   */
   function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
+    // region 通过四个pointer 向中间收拢 来确定 diff 区间
     let oldStartIdx = 0
     let newStartIdx = 0
     let oldEndIdx = oldCh.length - 1
@@ -410,6 +420,7 @@ export function createPatchFunction (backend) {
     let newEndIdx = newCh.length - 1
     let newStartVnode = newCh[0]
     let newEndVnode = newCh[newEndIdx]
+    // endregion
     let oldKeyToIdx, idxInOld, vnodeToMove, refElm
 
     // removeOnly is a special flag used only by <transition-group>
@@ -422,12 +433,16 @@ export function createPatchFunction (backend) {
     }
 
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+      // region TODO vnode移动之后被设为undefined，为什么呢？有4个cursor表示处理区间，加上直接 移动dom？为什么还需要设为undefined，不打算直接清空整个old数组吗？
       if (isUndef(oldStartVnode)) {
         oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
       } else if (isUndef(oldEndVnode)) {
         oldEndVnode = oldCh[--oldEndIdx]
-      } else if (sameVnode(oldStartVnode, newStartVnode)) {
-        patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
+      }
+      // endregion
+      // region 对两头两尾分别做判断，因为大概率是一致的，1. 在一定概率下将本次内循环的O(n)变为O(1)
+      else if (sameVnode(oldStartVnode, newStartVnode)) { // 头部对应的两个节点一致
+        patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx) // 修改内容
         oldStartVnode = oldCh[++oldStartIdx]
         newStartVnode = newCh[++newStartIdx]
       } else if (sameVnode(oldEndVnode, newEndVnode)) {
@@ -444,16 +459,20 @@ export function createPatchFunction (backend) {
         canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
         oldEndVnode = oldCh[--oldEndIdx]
         newStartVnode = newCh[++newStartIdx]
-      } else {
+      }
+      // endregion
+      else {
+        // 初次根据key建立索引，patch更新时只会更新dom，vnode list是不变的。（所以一定要提供key，2. 在有 key 的情况下将find 从 O(n) 变为 O(1)）
         if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
-          : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
-        if (isUndef(idxInOld)) { // New element
+          : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx) // 没有索引，那就 Array.find 咯
+        if (isUndef(idxInOld)) { // New element ， 旧的里面找不到，创建一个元素放置区间边缘
           createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
-        } else {
+        } else { // 找到了旧的对应元素
           vnodeToMove = oldCh[idxInOld]
-          if (sameVnode(vnodeToMove, newStartVnode)) {
+          // 因为有些是通过 key 来确定的，所以还是要对比一下是否真的相等。（怪不得提供了错的key，也会被更新）
+          if (sameVnode(vnodeToMove, newStartVnode)) { // 是同一个结点
             patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
             oldCh[idxInOld] = undefined
             canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
@@ -465,12 +484,14 @@ export function createPatchFunction (backend) {
         newStartVnode = newCh[++newStartIdx]
       }
     }
+    // region 如果还有剩余的，那这些肯定为差异想
     if (oldStartIdx > oldEndIdx) {
       refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
       addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
     } else if (newStartIdx > newEndIdx) {
       removeVnodes(oldCh, oldStartIdx, oldEndIdx)
     }
+    // endregion
   }
 
   function checkDuplicateKeys (children) {
@@ -498,6 +519,10 @@ export function createPatchFunction (backend) {
     }
   }
 
+  /**
+   * 对新旧 node 本身进行详细的对比，确认发生哪些改动
+   * 关于详细的子元素对比交由 updateChildren
+   */
   function patchVnode (
     oldVnode,
     vnode,
@@ -526,6 +551,7 @@ export function createPatchFunction (backend) {
       return
     }
 
+    // 静态节点key相同 并且已经clone了，则不需要后续更新
     // reuse element for static trees.
     // note we only do this if the vnode is cloned -
     // if the new node is not cloned it means the render functions have been
@@ -551,21 +577,21 @@ export function createPatchFunction (backend) {
       for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode)
       if (isDef(i = data.hook) && isDef(i = i.update)) i(oldVnode, vnode)
     }
-    if (isUndef(vnode.text)) {
-      if (isDef(oldCh) && isDef(ch)) {
-        if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
-      } else if (isDef(ch)) {
+    if (isUndef(vnode.text)) { // 新的不是文本节点
+      if (isDef(oldCh) && isDef(ch)) { // 新旧都有子节点
+        if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly) // 不相同更新子节点
+      } else if (isDef(ch)) { // 只有新的有子节点
         if (process.env.NODE_ENV !== 'production') {
           checkDuplicateKeys(ch)
         }
-        if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '')
-        addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
-      } else if (isDef(oldCh)) {
-        removeVnodes(oldCh, 0, oldCh.length - 1)
-      } else if (isDef(oldVnode.text)) {
-        nodeOps.setTextContent(elm, '')
+        if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '') // 但是旧的是文本，将现存的文本设置为空
+        addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue) // 并在该位置创建真实节点并插入
+      } else if (isDef(oldCh)) { // 只有旧子节点
+        removeVnodes(oldCh, 0, oldCh.length - 1) // 直接删除真实dom子节点
+      } else if (isDef(oldVnode.text)) { // 如果都没有，只有旧的是文本节点
+        nodeOps.setTextContent(elm, '') // 删除文本
       }
-    } else if (oldVnode.text !== vnode.text) {
+    } else if (oldVnode.text !== vnode.text) { // 如果是文本节点，并且文本变化了，复制为本
       nodeOps.setTextContent(elm, vnode.text)
     }
     if (isDef(data)) {
@@ -706,16 +732,16 @@ export function createPatchFunction (backend) {
     let isInitialPatch = false
     const insertedVnodeQueue = []
 
-    if (isUndef(oldVnode)) {
+    if (isUndef(oldVnode)) { // 旧的不存在，新的存在，创建新的element
       // empty mount (likely as component), create new root element
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {
       const isRealElement = isDef(oldVnode.nodeType)
-      if (!isRealElement && sameVnode(oldVnode, vnode)) {
+      if (!isRealElement && sameVnode(oldVnode, vnode)) { // 存在并且是相同的节点，使用更详细的对比
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
-      } else {
+      } else { // 两个vnode都存在，但是基础属性都不相等
         if (isRealElement) {
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
@@ -740,7 +766,7 @@ export function createPatchFunction (backend) {
           }
           // either not server-rendered, or hydration failed.
           // create an empty node and replace it
-          oldVnode = emptyNodeAt(oldVnode)
+          oldVnode = emptyNodeAt(oldVnode) // 修改为空
         }
 
         // replacing existing element
@@ -755,7 +781,7 @@ export function createPatchFunction (backend) {
           // leaving transition. Only happens when combining transition +
           // keep-alive + HOCs. (#4590)
           oldElm._leaveCb ? null : parentElm,
-          nodeOps.nextSibling(oldElm)
+          nodeOps.nextSibling(oldElm) // 插入空的oldEme之后
         )
 
         // update parent placeholder node element, recursively

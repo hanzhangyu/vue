@@ -71,6 +71,7 @@ export default class VNode {
   }
 }
 
+// 创建注释类型
 export const createEmptyVNode = (text: string = '') => {
   const node = new VNode()
   node.text = text
@@ -78,10 +79,12 @@ export const createEmptyVNode = (text: string = '') => {
   return node
 }
 
+// 创建文本类型
 export function createTextVNode (val: string | number) {
   return new VNode(undefined, undefined, undefined, String(val))
 }
 
+// TODO 为什么需要复制，内部实现也是 new 呀
 // optimized shallow clone
 // used for static nodes and slot nodes because they may be reused across
 // multiple renders, cloning them avoids errors when DOM manipulations rely

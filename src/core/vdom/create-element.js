@@ -44,6 +44,13 @@ export function createElement (
   return _createElement(context, tag, data, children, normalizationType)
 }
 
+/**
+ * 提供了四个主要属性创建element node 或者对应的vnode ,如果子元素是文本节点，会先传进来再创建text node
+ * @param context
+ * @param tag
+ * @param data
+ * @param children
+ */
 export function _createElement (
   context: Component,
   tag?: string | Class<Component> | Function | Object,
