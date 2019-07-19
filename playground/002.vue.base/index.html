@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>002.vue.base</title>
+</head>
+<body>
+<div id="app">
+  {{message}}
+  <my-functional-component :data="'child'">
+    <div slot="slotChild" slot-scope="prop">{{prop}}</div>
+    1231
+  </my-functional-component>
+</div>
+<script type="module">
+import Vue from "../../dist/vue.esm.browser.js";
+Vue.component('my-functional-component', {
+  functional: true,
+  props: { // 2.3.0开始，函数式组件可以省略props，会被自动的绑定
+    // ...
+    data: String,
+  },
+  // 为了弥补缺少的实例
+  // 提供第二个参数作为上下文
+  render: function (createElement, context) {
+    console.log(context);
+    return createElement(
+      'span',
+      context.data,
+      context.children
+    )
+  }
+});
+
+const app = new Vue({
+  el: '#app',
+  data: {
+    message: "hello"
+  }
+})
+
+</script>
+</body>
+</html>
