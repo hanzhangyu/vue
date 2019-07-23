@@ -3,6 +3,8 @@ import { extend } from 'shared/util'
 import { baseOptions } from 'web/compiler/options'
 import { isIE, isEdge } from 'core/util/env'
 
+// TODO 测试里面也没有测_underline和colon:colon这种情况呀，所以qnameCapture？
+
 describe('parser', () => {
   it('simple element', () => {
     const ast = parse('<h1>hello world</h1>', baseOptions)

@@ -96,6 +96,7 @@ declare type ASTDirective = {
 
 declare type ASTNode = ASTElement | ASTText | ASTExpression;
 
+// 普通节点
 declare type ASTElement = {
   type: 1;
   tag: string;
@@ -121,7 +122,7 @@ declare type ASTElement = {
   dynamicAttrs?: Array<ASTAttr>;
   props?: Array<ASTAttr>;
   plain?: boolean;
-  pre?: true;
+  pre?: true; // 使用了 v-pre
   ns?: string;
 
   component?: string;
@@ -136,13 +137,13 @@ declare type ASTElement = {
   ref?: string;
   refInFor?: boolean;
 
-  if?: string;
+  if?: string; // v-if or v-else
   ifProcessed?: boolean;
   elseif?: string;
   else?: true;
   ifConditions?: ASTIfConditions;
 
-  for?: string;
+  for?: string; // v-for
   forProcessed?: boolean;
   key?: string;
   alias?: string;
@@ -180,6 +181,7 @@ declare type ASTElement = {
   appendAsTree?: boolean;
 };
 
+// 表达式文本节点，TODO genText
 declare type ASTExpression = {
   type: 2;
   expression: string;
@@ -192,6 +194,7 @@ declare type ASTExpression = {
   end?: number;
 };
 
+// 纯文本
 declare type ASTText = {
   type: 3;
   text: string;

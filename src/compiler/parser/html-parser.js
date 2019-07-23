@@ -136,7 +136,7 @@ export function parseHTML (html, options) {
         text = html.substring(0, textEnd)
       }
 
-      if (textEnd < 0) {
+      if (textEnd < 0) { // 整个字符串中没有<，都为文本
         text = html
       }
 
@@ -286,6 +286,7 @@ export function parseHTML (html, options) {
     if (pos >= 0) {
       // Close all the open elements, up the stack
       for (let i = stack.length - 1; i >= pos; i--) {
+        // 对于没有闭合的标签，发出警告，并闭合
         if (process.env.NODE_ENV !== 'production' &&
           (i > pos || !tagName) &&
           options.warn
