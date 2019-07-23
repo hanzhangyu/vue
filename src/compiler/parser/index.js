@@ -210,6 +210,15 @@ export function parse (
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
     outputSourceRange: options.outputSourceRange,
+    // region 4个 handle
+    /**
+     * 匹配到起始标签
+     * @param tag
+     * @param attrs
+     * @param unary 是否为自闭合标签
+     * @param start
+     * @param end
+     */
     start (tag, attrs, unary, start, end) {
       // check namespace.
       // inherit parent ns if there is one
@@ -297,6 +306,7 @@ export function parse (
       }
     },
 
+    // 结束标签
     end (tag, start, end) {
       const element = stack[stack.length - 1]
       // pop stack
@@ -308,8 +318,9 @@ export function parse (
       closeElement(element)
     },
 
+    // 文本
     chars (text: string, start: number, end: number) {
-      if (!currentParent) {
+      if (!currentParent) { // 文本不能为父节点 root and template
         if (process.env.NODE_ENV !== 'production') {
           if (text === template) {
             warnOnce(
@@ -351,6 +362,7 @@ export function parse (
         text = preserveWhitespace ? ' ' : ''
       }
       if (text) {
+        // 压缩空字符
         if (!inPre && whitespaceOption === 'condense') {
           // condense consecutive whitespaces into single space
           text = text.replace(whitespaceRE, ' ')
@@ -379,6 +391,7 @@ export function parse (
         }
       }
     },
+    // 注释
     comment (text: string, start, end) {
       // adding anyting as a sibling to the root node is forbidden
       // comments should still be allowed, but ignored
@@ -395,6 +408,7 @@ export function parse (
         currentParent.children.push(child)
       }
     }
+    // endregion
   })
   return root
 }

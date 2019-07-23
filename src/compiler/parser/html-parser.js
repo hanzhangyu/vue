@@ -13,18 +13,19 @@ import { makeMap, no } from 'shared/util'
 import { isNonPhrasingTag } from 'web/compiler/util'
 import { unicodeRegExp } from 'core/util/lang'
 
+// 注意这里用了字符串，所以\.需要写成\\.
 // Regular Expressions for parsing tags and attributes
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
-const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`
-const qnameCapture = `((?:${ncname}\\:)?${ncname})`
-const startTagOpen = new RegExp(`^<${qnameCapture}`)
-const startTagClose = /^\s*(\/?)>/
-const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
+const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*` // 单块tag名称规范，强约束第一位
+const qnameCapture = `((?:${ncname}\\:)?${ncname})` // 完整的tag规范，TODO 支持冒号？ tag:tag，但是 validateComponentName 里又不支持
+const startTagOpen = new RegExp(`^<${qnameCapture}`) // 匹配开头，注意这里没有包含闭合，因为还要匹配attr，形如 ["<_d:i-v", "_d:i-v"]
+const startTagClose = /^\s*(\/?)>/ // 匹配开头关闭，可以空白字符开头，可以跟一个/
+const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`) // 结束标签
 const doctype = /^<!DOCTYPE [^>]+>/i
 // #7298: escape - to avoid being passed as HTML comment when inlined in page
 const comment = /^<!\--/
-const conditionalComment = /^<!\[/
+const conditionalComment = /^<!\[/ // 浏览器的条件注释...
 
 // Special Elements (can contain anything)
 export const isPlainTextElement = makeMap('script,style,textarea', true)
@@ -52,17 +53,19 @@ function decodeAttr (value, shouldDecodeNewlines) {
 }
 
 export function parseHTML (html, options) {
-  const stack = []
-  const expectHTML = options.expectHTML
-  const isUnaryTag = options.isUnaryTag || no
+  const stack = [] // 深搜
+  const expectHTML = options.expectHTML // 是否为html
+  const isUnaryTag = options.isUnaryTag || no // 是否自闭合
   const canBeLeftOpenTag = options.canBeLeftOpenTag || no
   let index = 0
-  let last, lastTag
+  let
+    last,
+    lastTag // stack top，也就是当前处理的节点 tag
   while (html) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
     if (!lastTag || !isPlainTextElement(lastTag)) {
-      let textEnd = html.indexOf('<')
+      let textEnd = html.indexOf('<') // 检测是否为文本
       if (textEnd === 0) {
         // Comment:
         if (comment.test(html)) {
@@ -94,10 +97,11 @@ export function parseHTML (html, options) {
           continue
         }
 
-        // End tag:
+        // End tag: 匹配结束
         const endTagMatch = html.match(endTag)
         if (endTagMatch) {
           const curIndex = index
+          // 去掉匹配的，并触发 end handle
           advance(endTagMatch[0].length)
           parseEndTag(endTagMatch[1], curIndex, index)
           continue
@@ -124,7 +128,7 @@ export function parseHTML (html, options) {
           !conditionalComment.test(rest)
         ) {
           // < in plain text, be forgiving and treat it as text
-          next = rest.indexOf('<', 1)
+          next = rest.indexOf('<', 1) // 找到下一个 < 出现的位置，进行检查是否为tag
           if (next < 0) break
           textEnd += next
           rest = html.slice(textEnd)
@@ -141,9 +145,10 @@ export function parseHTML (html, options) {
       }
 
       if (options.chars && text) {
-        options.chars(text, index - text.length, index)
+        options.chars(text, index - text.length, index) // 触发 chars handle
       }
     } else {
+      // script,style,textarea，遇到这种情况一定时在中间，所以直接讲文本丢至 chars handle 中处理，并截去该文本
       let endTagLength = 0
       const stackedTag = lastTag.toLowerCase()
       const reStackedTag = reCache[stackedTag] || (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'))
@@ -179,20 +184,25 @@ export function parseHTML (html, options) {
   // Clean up any remaining tags
   parseEndTag()
 
+  // 再截去n个字符
   function advance (n) {
     index += n
     html = html.substring(n)
   }
 
+  // 解析三块 ['<div', 'class="vue"', '>']
   function parseStartTag () {
     const start = html.match(startTagOpen)
     if (start) {
+      // region 截取 <div
       const match = {
         tagName: start[1],
         attrs: [],
         start: index
       }
       advance(start[0].length)
+      // endregion
+      // region 每次截取一个attr，循环
       let end, attr
       while (!(end = html.match(startTagClose)) && (attr = html.match(dynamicArgAttribute) || html.match(attribute))) {
         attr.start = index
@@ -200,12 +210,15 @@ export function parseHTML (html, options) {
         attr.end = index
         match.attrs.push(attr)
       }
+      // endregion
+      // region 是否为 /> 自闭合
       if (end) {
         match.unarySlash = end[1]
         advance(end[0].length)
         match.end = index
         return match
       }
+      // endregion
     }
   }
 
@@ -248,7 +261,7 @@ export function parseHTML (html, options) {
     }
 
     if (options.start) {
-      options.start(tagName, attrs, unary, match.start, match.end)
+      options.start(tagName, attrs, unary, match.start, match.end) // 触发 start handle
     }
   }
 
