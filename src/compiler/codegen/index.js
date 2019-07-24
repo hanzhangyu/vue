@@ -40,6 +40,7 @@ export type CodegenResult = {
   staticRenderFns: Array<string>
 };
 
+// $createElement 创建元素
 export function generate (
   ast: ASTElement | void,
   options: CompilerOptions
@@ -47,6 +48,8 @@ export function generate (
   const state = new CodegenState(options)
   const code = ast ? genElement(ast, state) : '_c("div")'
   return {
+    // TODO 这个不是不推荐使用吗？ 为什么不直接给所有分析出来的变量补上this？
+    // 不过的确复合 【如果是在对性能要求较高的场合，'with'下面的statement语句中的变量，只应该包含这个指定对象的属性。】这一条
     render: `with(this){return ${code}}`,
     staticRenderFns: state.staticRenderFns
   }
@@ -82,7 +85,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
 
       const children = el.inlineTemplate ? null : genChildren(el, state, true)
       code = `_c('${el.tag}'${
-        data ? `,${data}` : '' // data
+        data ? `,${data}` : '' // data，可选的模板属性
       }${
         children ? `,${children}` : '' // children
       })`
@@ -216,6 +219,12 @@ export function genFor (
     '})'
 }
 
+/**
+ * @link https://cn.vuejs.org/v2/guide/render-function.html#深入数据对象
+ * @param el
+ * @param state
+ * @returns {string}
+ */
 export function genData (el: ASTElement, state: CodegenState): string {
   let data = '{'
 
@@ -476,6 +485,7 @@ export function genChildren (
       el.tag !== 'template' &&
       el.tag !== 'slot'
     ) {
+      // 一个的
       const normalizationType = checkSkip
         ? state.maybeComponent(el) ? `,1` : `,0`
         : ``
@@ -485,6 +495,7 @@ export function genChildren (
       ? getNormalizationType(children, state.maybeComponent)
       : 0
     const gen = altGenNode || genNode
+    // 为每个child调用getNode
     return `[${children.map(c => gen(c, state)).join(',')}]${
       normalizationType ? `,${normalizationType}` : ''
     }`
@@ -522,6 +533,7 @@ function needsNormalization (el: ASTElement): boolean {
   return el.for !== undefined || el.tag === 'template' || el.tag === 'slot'
 }
 
+// 根据节点的类型生成不同的节点
 function genNode (node: ASTNode, state: CodegenState): string {
   if (node.type === 1) {
     return genElement(node, state)
@@ -532,17 +544,20 @@ function genNode (node: ASTNode, state: CodegenState): string {
   }
 }
 
+// createTextVNode 创建文本节点
 export function genText (text: ASTText | ASTExpression): string {
   return `_v(${text.type === 2
     ? text.expression // no need for () because already wrapped in _s()
-    : transformSpecialNewlines(JSON.stringify(text.text))
+    : transformSpecialNewlines(JSON.stringify(text.text)) // 外层裹一对双引号 ""
   })`
 }
 
+// createEmptyVNode 创建注释节点
 export function genComment (comment: ASTText): string {
-  return `_e(${JSON.stringify(comment.text)})`
+  return `_e(${JSON.stringify(comment.text)})` // 与文本类似
 }
 
+// renderSlot 创建slot
 function genSlot (el: ASTElement, state: CodegenState): string {
   const slotName = el.slotName || '"default"'
   const children = genChildren(el, state)
@@ -610,6 +625,7 @@ function generateValue (value) {
   return JSON.stringify(value)
 }
 
+// https://github.com/vuejs/vue/issues/3895 修复bug
 // #3895, #4268
 function transformSpecialNewlines (text: string): string {
   return text

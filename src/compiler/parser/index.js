@@ -436,7 +436,7 @@ function processRawAttrs (el) {
     }
   } else if (!el.pre) {
     // non root node in pre blocks with no attributes
-    el.plain = true
+    el.plain = true // 没有属性
   }
 }
 

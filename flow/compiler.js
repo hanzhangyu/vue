@@ -121,7 +121,7 @@ declare type ASTElement = {
   attrs?: Array<ASTAttr>;
   dynamicAttrs?: Array<ASTAttr>;
   props?: Array<ASTAttr>;
-  plain?: boolean;
+  plain?: boolean; // 节点没有属性
   pre?: true; // 使用了 v-pre
   ns?: string;
 

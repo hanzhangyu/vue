@@ -5,7 +5,7 @@ import { isObject, extend } from 'shared/util'
 import { isReservedTag } from 'web/util/index'
 import { baseOptions } from 'web/compiler/options'
 
-function assertCodegen (template, generatedCode, ...args) {
+function assertCodegen(template, generatedCode, ...args) {
   let staticRenderFnCodes = []
   let generateOptions = baseOptions
   let proc = null
@@ -30,11 +30,57 @@ function assertCodegen (template, generatedCode, ...args) {
 
 /* eslint-disable quotes */
 describe('codegen', () => {
-  it('generate directive', () => {
+  it('generate directive', () => { // 还是这个看起来舒服
     assertCodegen(
       '<p v-custom1:arg1.modifier="value1" v-custom2></p>',
       `with(this){return _c('p',{directives:[{name:"custom1",rawName:"v-custom1:arg1.modifier",value:(value1),expression:"value1",arg:"arg1",modifiers:{"modifier":true}},{name:"custom2",rawName:"v-custom2"}]})}`
     )
+    // region 生成的渲染函数
+    // with (this) {
+    //   return _c('p', { // 去this上找_c
+    //     directives: [
+    //       {
+    //         name: "custom1",
+    //         rawName: "v-custom1:arg1.modifier",
+    //         value: (value1),
+    //         expression: "value1",
+    //         arg: "arg1",
+    //         modifiers: {"modifier": true}
+    //       },
+    //       {name: "custom2", rawName: "v-custom2"}
+    //     ]
+    //   })
+    // }
+    // endregion
+
+    // region 官网给的例子
+    // // @returns {VNode}
+    // createElement(
+    //   // {String | Object | Function}
+    //   // 一个 HTML 标签名、组件选项对象，或者
+    //   // resolve 了上述任何一种的一个 async 函数。必填项。
+    //   'div',
+    //
+    //   // {Object}
+    //   // 一个与模板中属性对应的数据对象。可选。
+    //   {
+    //     // (详情见下一节)
+    //   },
+    //
+    //   // {String | Array}
+    //   // 子级虚拟节点 (VNodes)，由 `createElement()` 构建而成，
+    //   // 也可以使用字符串来生成“文本虚拟节点”。可选。
+    //   [
+    //     '先写一些文字',
+    //     createElement('h1', '一则头条'),
+    //     createElement(MyComponent, {
+    //       props: {
+    //         someProp: 'foobar'
+    //       }
+    //     })
+    //   ]
+    // )
+    // endregion
   })
 
   it('generate filters', () => {
@@ -128,6 +174,11 @@ describe('codegen', () => {
       '<ul><li v-for="item in items" ref="component1"></li></ul>',
       `with(this){return _c('ul',_l((items),function(item){return _c('li',{ref:"component1",refInFor:true})}),0)}`
     )
+    // with (this) {
+    //   return _c('ul', _l((items), function (item) {
+    //     return _c('li', {ref: "component1", refInFor: true})
+    //   }), 0)
+    // }
   })
 
   it('generate v-bind directive', () => {
@@ -579,6 +630,7 @@ describe('codegen', () => {
       '<svg><my-comp><circle :r="10"></circle></my-comp></svg>',
       `with(this){return _c('svg',[_c('my-comp',[_c('circle',{attrs:{"r":10}})])],1)}`
     )
+
   })
 
   it('generate is attribute', () => {
@@ -690,7 +742,7 @@ describe('codegen', () => {
     assertCodegen(
       '<p v-if="show">hello world</p>',
       `with(this){return (show)?_c('p',[_v("hello world")]):_e()}`,
-      { isReservedTag }
+      {isReservedTag}
     )
   })
 
@@ -700,6 +752,11 @@ describe('codegen', () => {
       `<div><template v-if="ok"><foo v-for="i in 1" :key="i"></foo></template></div>`,
       `with(this){return _c('div',[(ok)?_l((1),function(i){return _c('foo',{key:i})}):_e()],2)}`
     )
+    // with (this) {
+    //   return _c('div', [(ok) ? _l((1), function (i) {
+    //     return _c('foo', {key: i})
+    //   }) : _e()], 2)
+    // }
   })
 })
 /* eslint-enable quotes */
