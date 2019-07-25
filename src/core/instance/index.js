@@ -11,12 +11,13 @@ function Vue (options) {
   ) {
     warn('Vue is a constructor and should be called with the `new` keyword')
   }
-  this._init(options)
+  this._init(options) // initMixin
 }
 
+// 初始化prototype
 initMixin(Vue)
-stateMixin(Vue)
-eventsMixin(Vue)
+stateMixin(Vue)// 绑定：$set $delete $watch $data $props
+eventsMixin(Vue) // 绑定：$on $once $off $emit
 lifecycleMixin(Vue)
 renderMixin(Vue)
 

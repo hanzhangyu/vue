@@ -9,8 +9,8 @@ import {
 } from '../util/index'
 import { updateListeners } from '../vdom/helpers/index'
 
-export function initEvents (vm: Component) {
-  vm._events = Object.create(null)
+export function initEvents (vm: Component) { // TODO 在new Vue的时候调用的，全局的吗？
+  vm._events = Object.create(null) // event bus
   vm._hasHookEvent = false
   // init parent attached events
   const listeners = vm.$options._parentListeners
@@ -53,7 +53,7 @@ export function eventsMixin (Vue: Class<Component>) {
   const hookRE = /^hook:/
   Vue.prototype.$on = function (event: string | Array<string>, fn: Function): Component {
     const vm: Component = this
-    if (Array.isArray(event)) {
+    if (Array.isArray(event)) { // 原来还可以是数组
       for (let i = 0, l = event.length; i < l; i++) {
         vm.$on(event[i], fn)
       }
@@ -61,7 +61,7 @@ export function eventsMixin (Vue: Class<Component>) {
       (vm._events[event] || (vm._events[event] = [])).push(fn)
       // optimize hook:event cost by using a boolean flag marked at registration
       // instead of a hash lookup
-      if (hookRE.test(event)) {
+      if (hookRE.test(event)) { // 还可以这样。。。，this.$on('hook:created', ...)
         vm._hasHookEvent = true
       }
     }
@@ -75,13 +75,13 @@ export function eventsMixin (Vue: Class<Component>) {
       fn.apply(vm, arguments)
     }
     on.fn = fn
-    vm.$on(event, on)
+    vm.$on(event, on) // TODO 这样用户提供不就不能主动解绑了吗？不需要回传一个teardown之类的？
     return vm
   }
 
   Vue.prototype.$off = function (event?: string | Array<string>, fn?: Function): Component {
     const vm: Component = this
-    // all
+    // all，移除全部事件
     if (!arguments.length) {
       vm._events = Object.create(null)
       return vm
@@ -93,7 +93,7 @@ export function eventsMixin (Vue: Class<Component>) {
       }
       return vm
     }
-    // specific event
+    // specific event，只提供了事件
     const cbs = vm._events[event]
     if (!cbs) {
       return vm
@@ -102,7 +102,7 @@ export function eventsMixin (Vue: Class<Component>) {
       vm._events[event] = null
       return vm
     }
-    // specific handler
+    // specific handler，事件加handler
     let cb
     let i = cbs.length
     while (i--) {

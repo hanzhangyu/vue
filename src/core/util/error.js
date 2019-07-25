@@ -33,6 +33,7 @@ export function handleError (err: Error, vm: any, info: string) {
   }
 }
 
+// 裹上try catch
 export function invokeWithErrorHandling (
   handler: Function,
   context: any,
@@ -55,6 +56,7 @@ export function invokeWithErrorHandling (
   return res
 }
 
+// 触发全局错误钩子并打印
 function globalHandleError (err, vm, info) {
   if (config.errorHandler) {
     try {

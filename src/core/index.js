@@ -3,8 +3,10 @@ import { initGlobalAPI } from './global-api/index'
 import { isServerRendering } from 'core/util/env'
 import { FunctionalRenderContext } from 'core/vdom/create-functional-component'
 
+// 初始化static api
 initGlobalAPI(Vue)
 
+// region 定义一下平台相关的配置
 Object.defineProperty(Vue.prototype, '$isServer', {
   get: isServerRendering
 })
@@ -20,6 +22,7 @@ Object.defineProperty(Vue.prototype, '$ssrContext', {
 Object.defineProperty(Vue, 'FunctionalRenderContext', {
   value: FunctionalRenderContext
 })
+// endregion
 
 Vue.version = '__VERSION__'
 
