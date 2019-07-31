@@ -7,10 +7,11 @@ import { isIE, isIOS, isNative } from './env'
 
 export let isUsingMicroTask = false
 
-const callbacks = []
+const callbacks = [] // vue 内部更新是使用的 queue
 let pending = false
 
-function flushCallbacks () {
+// 执行当前 queue 中的所有 job
+function flushCallbacks() {
   pending = false
   const copies = callbacks.slice(0)
   callbacks.length = 0

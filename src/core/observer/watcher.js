@@ -50,10 +50,10 @@ export default class Watcher {
     isRenderWatcher?: boolean
   ) {
     this.vm = vm
-    if (isRenderWatcher) {
+    if (isRenderWatcher) { // 组件本身 Watcher
       vm._watcher = this
     }
-    vm._watchers.push(this)
+    vm._watchers.push(this) // 所有的 watcher 都会被 vm 所收集
     // options
     if (options) {
       this.deep = !!options.deep

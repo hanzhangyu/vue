@@ -90,39 +90,42 @@ export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype.$forceUpdate = function () {
     const vm: Component = this
     if (vm._watcher) {
-      vm._watcher.update()
+      // TODO template中的watch初始化
+      //    F:\code\js\learn-vue\reactive\instance\example\index.js
+      //    vm.$watch("data", patchVnode, { deep: true }) ?
+      vm._watcher.update() // 触发本组件接受的handler
     }
   }
 
   Vue.prototype.$destroy = function () {
     const vm: Component = this
-    if (vm._isBeingDestroyed) {
+    if (vm._isBeingDestroyed) { // flag，已经开始销毁
       return
     }
-    callHook(vm, 'beforeDestroy')
+    callHook(vm, 'beforeDestroy') // 本身同步，内部异步不阻塞
     vm._isBeingDestroyed = true
     // remove self from parent
     const parent = vm.$parent
-    if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
-      remove(parent.$children, vm)
+    if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) { // TODO abstract？ 这个不是router的嘛？
+      remove(parent.$children, vm) // 如果父组件还没销毁，在父组件的children中脱离
     }
     // teardown watchers
     if (vm._watcher) {
-      vm._watcher.teardown()
+      vm._watcher.teardown() // 将 mountComponent 的 Watcher 从所有 dep 中分离
     }
     let i = vm._watchers.length
     while (i--) {
-      vm._watchers[i].teardown()
+      vm._watchers[i].teardown() // 将 $wathcer 主动添加的 Watcher 从所有 dep 分离
     }
     // remove reference from data ob
     // frozen object may not have observer.
     if (vm._data.__ob__) {
-      vm._data.__ob__.vmCount--
+      vm._data.__ob__.vmCount-- // 一个vm被注销，asRootData 的 Ob 绑定的 vm 数减一 learn-vue\playground\lifeCycle\index.js
     }
     // call the last hook...
     vm._isDestroyed = true
     // invoke destroy hooks on current rendered tree
-    vm.__patch__(vm._vnode, null)
+    vm.__patch__(vm._vnode, null) // 触发vnode所有模块的destory钩子
     // fire destroyed hook
     callHook(vm, 'destroyed')
     // turn off all instance listeners.
@@ -131,7 +134,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     if (vm.$el) {
       vm.$el.__vue__ = null
     }
-    // release circular reference (#6759)
+    // release circular reference (#6759)，这个BUG是真的有点意思。。。 TODO 检查keep-alive组件实现，确认内存泄漏原因
     if (vm.$vnode) {
       vm.$vnode.parent = null
     }
@@ -200,7 +203,7 @@ export function mountComponent (
         callHook(vm, 'beforeUpdate')
       }
     }
-  }, true /* isRenderWatcher */)
+  }, true /* isRenderWatcher */) // mount 的时候的 watcher isRenderWatcher为true
   hydrating = false
 
   // manually mounted instance, call mounted on self

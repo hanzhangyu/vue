@@ -75,6 +75,7 @@ export function createPatchFunction (backend) {
 
   const { modules, nodeOps } = backend
 
+  // vnode 的 不同模块的钩子函数，如：ref,attr等
   for (i = 0; i < hooks.length; ++i) {
     cbs[hooks[i]] = []
     for (j = 0; j < modules.length; ++j) {
@@ -348,6 +349,7 @@ export function createPatchFunction (backend) {
     }
   }
 
+  // 触发vnode所有模块的destory钩子，在web下其实只有ref 与 directives
   function invokeDestroyHook (vnode) {
     let i, j
     const data = vnode.data
@@ -724,7 +726,7 @@ export function createPatchFunction (backend) {
   }
 
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
-    if (isUndef(vnode)) {
+    if (isUndef(vnode)) { // $destroy 时触发
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
       return
     }
