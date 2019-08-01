@@ -56,6 +56,7 @@ export function initLifecycle (vm: Component) {
 }
 
 export function lifecycleMixin (Vue: Class<Component>) {
+  // diff 新旧 vnode
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
@@ -93,6 +94,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
       // TODO template中的watch初始化
       //    F:\code\js\learn-vue\reactive\instance\example\index.js
       //    vm.$watch("data", patchVnode, { deep: true }) ?
+      // updateComponent -> vm._render
       vm._watcher.update() // 触发本组件接受的handler
     }
   }
@@ -141,6 +143,13 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
+/**
+ * @alias $mount
+ * @param vm
+ * @param el
+ * @param hydrating
+ * @returns {Component}
+ */
 export function mountComponent (
   vm: Component,
   el: ?Element,
@@ -179,7 +188,7 @@ export function mountComponent (
       const endTag = `vue-perf-end:${id}`
 
       mark(startTag)
-      const vnode = vm._render()
+      const vnode = vm._render() // render 函數会帮助我们调用所有 data 的getter方法
       mark(endTag)
       measure(`vue ${name} render`, startTag, endTag)
 
