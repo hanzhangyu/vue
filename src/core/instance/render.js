@@ -29,7 +29,7 @@ export function initRender (vm: Component) {
   // args order: tag, data, children, normalizationType, alwaysNormalize
   // internal version is used by render functions compiled from templates
   // https://github.com/vuejs/jsx/blob/dev/packages/babel-sugar-inject-h/src/index.js
-  // TODO 唯一一个暴露的渲染API，使JSX成为可能？
+  // TODO 唯一一个暴露的创建Vnode API，使 JSX 成为可能？
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
   // user-written render functions.
@@ -61,13 +61,14 @@ export function setCurrentRenderingInstance (vm: Component) {
 }
 
 export function renderMixin (Vue: Class<Component>) {
-  // install runtime convenience helpers
+  // install runtime convenience helpers 绑定在render函数会用的到的一些缩写函数
   installRenderHelpers(Vue.prototype)
 
   Vue.prototype.$nextTick = function (fn: Function) {
     return nextTick(fn, this)
   }
 
+  // 返回一份新的vnode
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
     const { render, _parentVnode } = vm.$options
@@ -82,6 +83,7 @@ export function renderMixin (Vue: Class<Component>) {
 
     // set parent vnode. this allows render functions to have access
     // to the data on the placeholder node.
+    // 子组件在父组件的占位符，用于获取slot中的数据
     vm.$vnode = _parentVnode
     // render self
     let vnode

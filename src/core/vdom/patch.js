@@ -15,7 +15,7 @@ import config from '../config'
 import { SSR_ATTR } from 'shared/constants'
 import { registerRef } from './modules/ref'
 import { traverse } from '../observer/traverse'
-import { activeInstance } from '../instance/lifecycle'
+import {activeInstance, updateChildComponent} from '../instance/lifecycle'
 import { isTextInputType } from 'web/util/element'
 
 import {
@@ -570,7 +570,7 @@ export function createPatchFunction (backend) {
     let i
     const data = vnode.data
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
-      i(oldVnode, vnode)
+      i(oldVnode, vnode) // TODO updateChildComponent？
     }
 
     const oldCh = oldVnode.children

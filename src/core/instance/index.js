@@ -18,7 +18,7 @@ function Vue (options) {
 initMixin(Vue)
 stateMixin(Vue)// 绑定：$set $delete $watch $data $props
 eventsMixin(Vue) // 绑定：$on $once $off $emit
-lifecycleMixin(Vue)
-renderMixin(Vue)
+lifecycleMixin(Vue) // 绑定：$forceUpdate $destroy 提供内置方法：_update
+renderMixin(Vue) // 绑定：$nextTick 提供内置方法：_render
 
 export default Vue

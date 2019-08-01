@@ -35,6 +35,7 @@ const resolve = p => {
   }
 }
 
+// Vue 最终打包出来是使用的不同的platform的entry，作为入口
 const builds = {
   // Runtime only (CommonJS). Used by bundlers e.g. Webpack & Browserify
   'web-runtime-cjs-dev': {

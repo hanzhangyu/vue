@@ -30,24 +30,24 @@ declare interface Component {
   $refs: { [key: string]: Component | Element | Array<Component | Element> | void };
   $slots: { [key: string]: Array<VNode> };
   $scopedSlots: { [key: string]: () => VNodeChildren };
-  $vnode: VNode; // the placeholder node for the component in parent's render tree
+  $vnode: VNode; // 组件在父组件的占位符（通常tag为vue-component-*），用于获取slot中的数据 the placeholder node for the component in parent's render tree
   $attrs: { [key: string] : string };
   $listeners: { [key: string]: Function | Array<Function> };
   $isServer: boolean;
 
   // public methods
-  $mount: (el?: Element | string, hydrating?: boolean) => Component;
-  $forceUpdate: () => void;
-  $destroy: () => void;
-  $set: <T>(target: Object | Array<T>, key: string | number, val: T) => T;
-  $delete: <T>(target: Object | Array<T>, key: string | number) => void;
-  $watch: (expOrFn: string | Function, cb: Function, options?: Object) => Function;
+  $mount: (el?: Element | string, hydrating?: boolean) => Component; // 在lifecycle.js实现了非platform部分，由platforms\web\runtime\index.js实现platform相关
+  $forceUpdate: () => void; // 调用vm本身以render函数为getter的Watcher 的update
+  $destroy: () => void; // 移除vnode，销毁watcher，注销listener，触发hook，通过patch销毁dom
+  $set: <T>(target: Object | Array<T>, key: string | number, val: T) => T; // 设置对应数据，通知 dep
+  $delete: <T>(target: Object | Array<T>, key: string | number) => void; // 同上
+  $watch: (expOrFn: string | Function, cb: Function, options?: Object) => Function; //watcher factory
   $on: (event: string | Array<string>, fn: Function) => Component;
   $once: (event: string, fn: Function) => Component;
   $off: (event?: string | Array<string>, fn?: Function) => Component;
   $emit: (event: string, ...args: Array<mixed>) => Component;
-  $nextTick: (fn: Function) => void | Promise<*>;
-  $createElement: (tag?: string | Component, data?: Object, children?: VNodeChildren) => VNode;
+  $nextTick: (fn: Function) => void | Promise<*>; // 推入 Vue 的全局 microtasks
+  $createElement: (tag?: string | Component, data?: Object, children?: VNodeChildren) => VNode; // 暴露的唯一创建Vnode API
 
   // private properties
   _uid: number | string;
@@ -78,12 +78,12 @@ declare interface Component {
   // lifecycle
   _init: Function;
   _mount: (el?: Element | void, hydrating?: boolean) => Component;
-  _update: (vnode: VNode, hydrating?: boolean) => void;
+  _update: (vnode: VNode, hydrating?: boolean) => void; // 调用__patch__
 
   // rendering
-  _render: () => VNode;
+  _render: () => VNode; // 调用render函数产出新的vnode TODO slot
 
-  __patch__: (
+  __patch__: ( // diff 函数
     a: Element | VNode | void,
     b: VNode,
     hydrating?: boolean,
