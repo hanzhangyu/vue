@@ -14,11 +14,12 @@ import { isNonPhrasingTag } from 'web/compiler/util'
 import { unicodeRegExp } from 'core/util/lang'
 
 // 注意这里用了字符串，所以\.需要写成\\.
+// @link https://www.w3.org/TR/html50/the-xhtml-syntax.html XHTML 规范
 // Regular Expressions for parsing tags and attributes
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*` // 单块tag名称规范，强约束第一位
-const qnameCapture = `((?:${ncname}\\:)?${ncname})` // 完整的tag规范，TODO 支持冒号？ tag:tag，但是 validateComponentName 里又不支持
+const qnameCapture = `((?:${ncname}\\:)?${ncname})` // 完整的tag规范，TODO 支持冒号？ tag:tag，但是 validateComponentName 里又不支持 -> XHTML 支持，但是 HTML5 规范不支持？
 const startTagOpen = new RegExp(`^<${qnameCapture}`) // 匹配开头，注意这里没有包含闭合，因为还要匹配attr，形如 ["<_d:i-v", "_d:i-v"]
 const startTagClose = /^\s*(\/?)>/ // 匹配开头关闭，可以空白字符开头，可以跟一个/
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`) // 结束标签

@@ -276,6 +276,7 @@ function checkComponents (options: Object) {
   }
 }
 
+// @link https://www.w3.org/TR/2011/WD-html5-20110525/syntax.html#elements-0
 export function validateComponentName (name: string) {
   if (!new RegExp(`^[a-zA-Z][\\-\\.0-9_${unicodeRegExp.source}]*$`).test(name)) {
     warn(
