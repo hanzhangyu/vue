@@ -34,12 +34,13 @@ export function initLifecycle (vm: Component) {
   const options = vm.$options
 
   // locate first non-abstract parent
+  // 找到第一个非 abstract 组件，修正 $options的 parent，内部属性 options 还是指向 原组件
   let parent = options.parent
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
-    parent.$children.push(vm)
+    parent.$children.push(vm) // 越过 abstract 组件，将自己加入父组件的 $children 中
   }
 
   vm.$parent = parent
@@ -109,7 +110,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     vm._isBeingDestroyed = true
     // remove self from parent
     const parent = vm.$parent
-    if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) { // TODO abstract？ 这个不是router的嘛？
+    if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
       remove(parent.$children, vm) // 如果父组件还没销毁，在父组件的children中脱离
     }
     // teardown watchers
