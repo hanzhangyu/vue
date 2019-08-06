@@ -29,6 +29,7 @@ export function setActiveInstance(vm: Component) {
   }
 }
 
+// 初始化生命周期属性
 export function initLifecycle (vm: Component) {
   const options = vm.$options
 
@@ -345,8 +346,10 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
+// 触发钩子函数（除了 errorCaptured）
 export function callHook (vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
+  // 在当前target后面在推入一个undefined，防止target 被 加入 dep，（跳过props的getter，TODO 只有render,computed,watch里面的prop才能被绑定）
   pushTarget()
   const handlers = vm.$options[hook]
   const info = `${hook} hook`
@@ -358,5 +361,6 @@ export function callHook (vm: Component, hook: string) {
   if (vm._hasHookEvent) {
     vm.$emit('hook:' + hook)
   }
+  // 修正target
   popTarget()
 }

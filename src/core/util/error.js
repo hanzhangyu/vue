@@ -6,9 +6,10 @@ import { inBrowser, inWeex } from './env'
 import { isPromise } from 'shared/util'
 import { pushTarget, popTarget } from '../observer/dep'
 
+// 处理出现的错误，并向上冒泡
 export function handleError (err: Error, vm: any, info: string) {
   // Deactivate deps tracking while processing error handler to avoid possible infinite rendering.
-  // See: https://github.com/vuejs/vuex/issues/1505
+  // See: https://github.com/vuejs/vuex/issues/1505 https://github.com/vuejs/vue/pull/9489/files
   pushTarget()
   try {
     if (vm) {
@@ -18,7 +19,7 @@ export function handleError (err: Error, vm: any, info: string) {
         if (hooks) {
           for (let i = 0; i < hooks.length; i++) {
             try {
-              const capture = hooks[i].call(cur, err, vm, info) === false
+              const capture = hooks[i].call(cur, err, vm, info) === false // 返回 false 阻止冒泡
               if (capture) return
             } catch (e) {
               globalHandleError(e, cur, 'errorCaptured hook')

@@ -112,6 +112,7 @@ function initProps (vm: Component, propsOptions: Object) {
 
 function initData (vm: Component) {
   let data = vm.$options.data
+  // 先获取data
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
@@ -149,11 +150,13 @@ function initData (vm: Component) {
     }
   }
   // observe data
+  // 然后在 Observe，此时data 对象里面的 prop 已成为值，而不是表达式
   observe(data, true /* asRootData */)
 }
 
 export function getData (data: Function, vm: Component): any {
   // #7573 disable dep collection when invoking data getters
+  // 屏蔽当前 target 防止 调用data 函数时，访问 props 被加入 dep，（跳过props的getter）
   pushTarget()
   try {
     return data.call(vm, vm)

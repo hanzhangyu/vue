@@ -142,6 +142,7 @@ strats.data = function (
 
 /**
  * Hooks and props are merged as arrays.
+ * 合并时如果发现已经存在（如 来自 mixin 或者 extend），则使用数组
  */
 function mergeHook (
   parentVal: ?Array<Function>,

@@ -5,7 +5,7 @@ import type Watcher from '../src/core/observer/watcher'
 declare interface Component {
   // constructor information
   static cid: number; // class id，可以 extend 出新的class
-  static options: Object;
+  static options: Object; // Vue 的全局 options
   // extend
   static extend: (options: Object) => Function;
   static superOptions: Object;
@@ -23,7 +23,7 @@ declare interface Component {
   $el: any; // so that we can attach __vue__ to it
   $data: Object;
   $props: Object;
-  $options: ComponentOptions;
+  $options: ComponentOptions; // 用户传入的options参数 与 构造函数的options 的 merge
   $parent: Component | void;
   $root: Component;
   $children: Array<Component>;

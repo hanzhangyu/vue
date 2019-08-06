@@ -29,7 +29,7 @@ export function initMixin (Vue: Class<Component>) {
 
     // a flag to avoid this being observed
     vm._isVue = true
-    // merge options
+    // merge options 合并 options 至 $options
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
@@ -48,16 +48,25 @@ export function initMixin (Vue: Class<Component>) {
     } else {
       vm._renderProxy = vm
     }
+
+
     // expose real self
+    // 参考图
+    // @link https://cn.vuejs.org/images/lifecycle.png
     vm._self = vm
     initLifecycle(vm)
     initEvents(vm)
     initRender(vm)
+
     callHook(vm, 'beforeCreate')
+
     initInjections(vm) // resolve injections before data/props
     initState(vm)
     initProvide(vm) // resolve provide after data/props
+
     callHook(vm, 'created')
+
+
 
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
@@ -66,6 +75,7 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
+    // 有 el 自动 mount
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }
@@ -91,11 +101,13 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   }
 }
 
+// 获取构造函数的 options 以及 SupClass 的 options（for extend）
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
   if (Ctor.super) {
     const superOptions = resolveConstructorOptions(Ctor.super)
     const cachedSuperOptions = Ctor.superOptions
+    // TODO 这是啥？ hot-reload？为啥会被修改
     if (superOptions !== cachedSuperOptions) {
       // super option changed,
       // need to resolve new options.
@@ -115,6 +127,7 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
   return options
 }
 
+// 检查 options 是否已被修改
 function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
   let modified
   const latest = Ctor.options
