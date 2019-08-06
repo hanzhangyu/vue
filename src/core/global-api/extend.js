@@ -4,6 +4,8 @@ import { ASSET_TYPES } from 'shared/constants'
 import { defineComputed, proxy } from '../instance/state'
 import { extend, mergeOptions, validateComponentName } from '../util/index'
 
+// @link https://github.com/vuejs/vue-class-component/blob/master/src/component.ts vue-class-component 的基础
+// TODO 检查 vue 3 不推荐 class style component RFC
 export function initExtend (Vue: GlobalAPI) {
   /**
    * Each instance constructor, including Vue, has a unique
@@ -15,22 +17,25 @@ export function initExtend (Vue: GlobalAPI) {
 
   /**
    * Class inheritance
+   * 返回一个继承与Vue的构造器
    */
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
     const Super = this
+    // region 对同一个对象调用extend返回缓存
     const SuperId = Super.cid
-    const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {})
+    const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {}) // 注入_Ctor
     if (cachedCtors[SuperId]) {
       return cachedCtors[SuperId]
     }
+    // endregion
 
     const name = extendOptions.name || Super.options.name
     if (process.env.NODE_ENV !== 'production' && name) {
-      validateComponentName(name)
+      validateComponentName(name) // 校验是否符合 HTML5 规范
     }
 
-    const Sub = function VueComponent (options) {
+    const Sub = function VueComponent (options) { // 与 Vue 一样初始化
       this._init(options)
     }
     Sub.prototype = Object.create(Super.prototype)
@@ -45,6 +50,7 @@ export function initExtend (Vue: GlobalAPI) {
     // For props and computed properties, we define the proxy getters on
     // the Vue instances at extension time, on the extended prototype. This
     // avoids Object.defineProperty calls for each instance created.
+    // 对于 extend 传入的 props 与 computed（非 new 时传入的，它每次实例化是都会 defineProperty），可以在这里就 defineProperty
     if (Sub.options.props) {
       initProps(Sub)
     }
@@ -59,10 +65,11 @@ export function initExtend (Vue: GlobalAPI) {
 
     // create asset registers, so extended classes
     // can have their private assets too.
+    // 提供 SubClass 创建自己的一些 asset（SubClass 私有资源，可以屏蔽 SupClass） 的能力
     ASSET_TYPES.forEach(function (type) {
       Sub[type] = Super[type]
     })
-    // enable recursive self-lookup
+    // enable recursive self-lookup 支持组件递归调用
     if (name) {
       Sub.options.components[name] = Sub
     }
@@ -80,6 +87,7 @@ export function initExtend (Vue: GlobalAPI) {
   }
 }
 
+// vm[key] -> vm._props[key]
 function initProps (Comp) {
   const props = Comp.options.props
   for (const key in props) {

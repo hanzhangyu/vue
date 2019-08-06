@@ -4,7 +4,7 @@ import type Watcher from '../src/core/observer/watcher'
 
 declare interface Component {
   // constructor information
-  static cid: number;
+  static cid: number; // class id，可以 extend 出新的class
   static options: Object;
   // extend
   static extend: (options: Object) => Function;

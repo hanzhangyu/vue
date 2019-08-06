@@ -98,6 +98,7 @@ function getOuterHTML (el: Element): string {
   }
 }
 
+// 注册全局 compile
 Vue.compile = compileToFunctions
 
 export default Vue

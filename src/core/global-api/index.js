@@ -46,6 +46,7 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   Vue.nextTick = nextTick
 
   // 2.6 explicit observable API
+  // Vue 3 会使用 Proxy，这里暴露 observe 向前兼容
   Vue.observable = <T>(obj: T): T => {
     observe(obj)
     return obj
@@ -62,8 +63,9 @@ export function initGlobalAPI (Vue: GlobalAPI) {
 
   extend(Vue.options.components, builtInComponents)
 
-  initUse(Vue)
-  initMixin(Vue)
-  initExtend(Vue)
-  initAssetRegisters(Vue)
+  // TODO options 被使用的时机
+  initUse(Vue) // 插件
+  initMixin(Vue) // 全局混入
+  initExtend(Vue) // 绑定 Vue.extend
+  initAssetRegisters(Vue) // 绑定 asset 注册函数
 }
