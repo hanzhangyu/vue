@@ -108,6 +108,7 @@ export function addHandler (
     }
   }
 
+  // region 这3个特殊的 修饰符 会转为符号
   // check capture modifier
   if (modifiers.capture) {
     delete modifiers.capture
@@ -122,6 +123,7 @@ export function addHandler (
     delete modifiers.passive
     name = prependModifierMarker('&', name, dynamic)
   }
+  // endregion
 
   let events
   if (modifiers.native) {

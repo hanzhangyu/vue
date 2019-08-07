@@ -11,6 +11,7 @@ import {
   isPlainObject
 } from 'shared/util'
 
+// 从 render 函数生成的 name 中提取出 移除修饰符 的name，并提取 修饰符
 const normalizeEvent = cached((name: string): {
   name: string,
   once: boolean,
@@ -73,7 +74,7 @@ export function updateListeners (
         `Invalid handler for event "${event.name}": got ` + String(cur),
         vm
       )
-    } else if (isUndef(old)) {
+    } else if (isUndef(old)) { // 不存在 old 新建
       if (isUndef(cur.fns)) {
         cur = on[name] = createFnInvoker(cur, vm)
       }
@@ -81,13 +82,13 @@ export function updateListeners (
         cur = on[name] = createOnceHandler(event.name, cur, event.capture)
       }
       add(event.name, cur, event.capture, event.passive, event.params)
-    } else if (cur !== old) {
+    } else if (cur !== old) { // 存在事件但不相等，替换
       old.fns = cur
       on[name] = old
     }
   }
   for (name in oldOn) {
-    if (isUndef(on[name])) {
+    if (isUndef(on[name])) { // 只存在于 old，移除事件
       event = normalizeEvent(name)
       remove(event.name, oldOn[name], event.capture)
     }

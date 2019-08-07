@@ -1,5 +1,7 @@
 /* @flow */
-
+/**
+ * @file dom 事件
+ */
 import { isDef, isUndef } from 'shared/util'
 import { updateListeners } from 'core/vdom/helpers/index'
 import { isIE, isFF, supportsPassive, isUsingMicroTask } from 'core/util/index'

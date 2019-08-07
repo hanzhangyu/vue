@@ -9,11 +9,13 @@ import {
 } from '../util/index'
 import { updateListeners } from '../vdom/helpers/index'
 
-export function initEvents (vm: Component) { // TODO 在new Vue的时候调用的，全局的吗？
+// 为每个组件绑定事件
+export function initEvents (vm: Component) {
   vm._events = Object.create(null) // event bus
   vm._hasHookEvent = false
   // init parent attached events
   const listeners = vm.$options._parentListeners
+  // 初始化父级组件传入的事件，这里只处理组件级的事件，因为这不是原生的
   if (listeners) {
     updateComponentListeners(vm, listeners)
   }
@@ -29,6 +31,7 @@ function remove (event, fn) {
   target.$off(event, fn)
 }
 
+// TODO 不使用 $once 是因为 https://github.com/vuejs/vue/issues/8032
 function createOnceHandler (event, fn) {
   const _target = target
   return function onceHandler () {
@@ -39,6 +42,7 @@ function createOnceHandler (event, fn) {
   }
 }
 
+// 更新组件的事件
 export function updateComponentListeners (
   vm: Component,
   listeners: Object,
