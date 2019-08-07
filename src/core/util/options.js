@@ -296,6 +296,7 @@ export function validateComponentName (name: string) {
 /**
  * Ensure all props option syntax are normalized into the
  * Object-based format.
+ * 将所有的 props 改为对象格式，并格式化命名 a-b to aB
  */
 function normalizeProps (options: Object, vm: ?Component) {
   const props = options.props
@@ -333,6 +334,7 @@ function normalizeProps (options: Object, vm: ?Component) {
 
 /**
  * Normalize all injections into Object-based format
+ * 将所有的注入改为 对象 格式
  */
 function normalizeInject (options: Object, vm: ?Component) {
   const inject = options.inject
