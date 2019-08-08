@@ -24,15 +24,15 @@ export function validateProp (
   propsData: Object,
   vm?: Component
 ): any {
-  const prop = propOptions[key]
-  const absent = !hasOwn(propsData, key)
-  let value = propsData[key]
+  const prop = propOptions[key] // 设置的 prop 选项
+  const absent = !hasOwn(propsData, key) // 父级没有传入该 prop
+  let value = propsData[key] // 传入的值
   // boolean casting
   const booleanIndex = getTypeIndex(Boolean, prop.type)
   if (booleanIndex > -1) {
-    if (absent && !hasOwn(prop, 'default')) {
+    if (absent && !hasOwn(prop, 'default')) { // 没有提供并且没有 default 为 false
       value = false
-    } else if (value === '' || value === hyphenate(key)) {
+    } else if (value === '' || value === hyphenate(key)) { // 支持缩写 为空（bool-attr） 或者相等（bool-attr="bool-attr）
       // only cast empty string / same name to boolean if
       // boolean has higher priority
       const stringIndex = getTypeIndex(String, prop.type)
@@ -46,6 +46,7 @@ export function validateProp (
     value = getPropDefaultValue(vm, prop, key)
     // since the default value is a fresh copy,
     // make sure to observe it.
+    // 默认值不是一个已经 reactive 的对象，而且如是对象 肯定需要 reactive 的
     const prevShouldObserve = shouldObserve
     toggleObserving(true)
     observe(value)
@@ -102,7 +103,7 @@ function assertProp (
   name: string,
   value: any,
   vm: ?Component,
-  absent: boolean
+  absent: boolean // 父级没有传入该 prop
 ) {
   if (prop.required && absent) {
     warn(
@@ -115,12 +116,13 @@ function assertProp (
     return
   }
   let type = prop.type
-  let valid = !type || type === true
+  let valid = !type || type === true // 没有type 或者 type 等于 true 为校验成功
   const expectedTypes = []
   if (type) {
     if (!Array.isArray(type)) {
       type = [type]
     }
+    // 找到符合的 type
     for (let i = 0; i < type.length && !valid; i++) {
       const assertedType = assertType(value, type[i])
       expectedTypes.push(assertedType.expectedType || '')

@@ -58,7 +58,7 @@ export default class Watcher {
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
-      this.lazy = !!options.lazy
+      this.lazy = !!options.lazy // 在 lazy 下 发送了改动 不会立即计算结果，也不会触发回调，只是把 dirty 标记为 true，表明已修改
       this.sync = !!options.sync
       this.before = options.before
     } else {
@@ -180,7 +180,7 @@ export default class Watcher {
     if (this.active) {
       const value = this.get()
       if (
-        value !== this.value ||
+        value !== this.value || // 只有当值发生变化才会触发
         // Deep watchers and watchers on Object/Arrays should fire even
         // when the value is the same, because the value may
         // have mutated.
@@ -206,6 +206,7 @@ export default class Watcher {
   /**
    * Evaluate the value of the watcher.
    * This only gets called for lazy watchers.
+   * lazy watcher 手动触发 get
    */
   evaluate () {
     this.value = this.get()

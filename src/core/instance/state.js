@@ -28,6 +28,7 @@ import {
   isReservedAttribute
 } from '../util/index'
 
+// 每次使用前都会初始化，减少构建对象字面量的损耗
 const sharedPropertyDefinition = {
   enumerable: true,
   configurable: true,
@@ -35,6 +36,7 @@ const sharedPropertyDefinition = {
   set: noop
 }
 
+// 用来代理内部属性 _data 与 _props 到 vm
 export function proxy (target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
@@ -46,29 +48,31 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 }
 
 export function initState (vm: Component) {
-  vm._watchers = []
+  vm._watchers = [] // vm 的所有 watcher
   const opts = vm.$options
-  if (opts.props) initProps(vm, opts.props)
-  if (opts.methods) initMethods(vm, opts.methods)
+  if (opts.props) initProps(vm, opts.props) // data 中可以使用 prop
+  if (opts.methods) initMethods(vm, opts.methods) // data 中可以使用 method
   if (opts.data) {
     initData(vm)
   } else {
     observe(vm._data = {}, true /* asRootData */)
   }
-  if (opts.computed) initComputed(vm, opts.computed)
-  if (opts.watch && opts.watch !== nativeWatch) {
+  if (opts.computed) initComputed(vm, opts.computed) // computed 可以使用 props data
+  if (opts.watch && opts.watch !== nativeWatch) { // watch 可以使用 props data computed
     initWatch(vm, opts.watch)
   }
 }
 
 function initProps (vm: Component, propsOptions: Object) {
-  const propsData = vm.$options.propsData || {}
+  const propsData = vm.$options.propsData || {} // 由父组件提供的 props 数据
   const props = vm._props = {}
   // cache prop keys so that future props updates can iterate using Array
   // instead of dynamic object key enumeration.
-  const keys = vm.$options._propKeys = []
+  const keys = vm.$options._propKeys = [] // props 在初始化的是时候就 缓存 了有哪些 key
   const isRoot = !vm.$parent
   // root instance props should be converted
+  // 如果不是根组件其 props key 对应的 value 已经是 reactive 或者 不需要 reactive
+  // @link https://cn.vuejs.org/v2/api/index.html#propsData
   if (!isRoot) {
     toggleObserving(false)
   }
@@ -129,6 +133,7 @@ function initData (vm: Component) {
   const props = vm.$options.props
   const methods = vm.$options.methods
   let i = keys.length
+  // 检查每一个 data 属性，不冲突即设置
   while (i--) {
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
@@ -172,13 +177,13 @@ const computedWatcherOptions = { lazy: true }
 
 function initComputed (vm: Component, computed: Object) {
   // $flow-disable-line
-  const watchers = vm._computedWatchers = Object.create(null)
+  const watchers = vm._computedWatchers = Object.create(null) // 所有的由 computed 产生的 watcher
   // computed properties are just getters during SSR
   const isSSR = isServerRendering()
 
   for (const key in computed) {
     const userDef = computed[key]
-    const getter = typeof userDef === 'function' ? userDef : userDef.get
+    const getter = typeof userDef === 'function' ? userDef : userDef.get // 取出 getter
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
         `Getter is missing for computed property "${key}".`,
@@ -188,10 +193,11 @@ function initComputed (vm: Component, computed: Object) {
 
     if (!isSSR) {
       // create internal watcher for the computed property.
+      // 每一个 computed 都是 lazy watcher
       watchers[key] = new Watcher(
         vm,
         getter || noop,
-        noop,
+        noop, // callback 为 空函数
         computedWatcherOptions
       )
     }
@@ -202,6 +208,7 @@ function initComputed (vm: Component, computed: Object) {
     if (!(key in vm)) {
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
+      // 只检查了 data 与 prop，所以前面定义的 method 如果存在，则会忽略
       if (key in vm.$data) {
         warn(`The computed property "${key}" is already defined in data.`, vm)
       } else if (vm.$options.props && key in vm.$options.props) {
@@ -222,7 +229,7 @@ export function defineComputed (
       ? createComputedGetter(key)
       : createGetterInvoker(userDef)
     sharedPropertyDefinition.set = noop
-  } else {
+  } else { // get/set
     sharedPropertyDefinition.get = userDef.get
       ? shouldCache && userDef.cache !== false
         ? createComputedGetter(key)
@@ -230,6 +237,7 @@ export function defineComputed (
       : noop
     sharedPropertyDefinition.set = userDef.set || noop
   }
+  // 非生产环境下 设为 告警函数
   if (process.env.NODE_ENV !== 'production' &&
       sharedPropertyDefinition.set === noop) {
     sharedPropertyDefinition.set = function () {
@@ -239,18 +247,20 @@ export function defineComputed (
       )
     }
   }
-  Object.defineProperty(target, key, sharedPropertyDefinition)
+  Object.defineProperty(target, key, sharedPropertyDefinition) // 读取 computed 是触发 带缓存的get 或者 set
 }
 
+// 薛定谔的值[奸笑]，你要看我（watcher.value）在不在，你就得访问，你访问那我肯定在，其实我一开始 并不在
 function createComputedGetter (key) {
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
       if (watcher.dirty) {
-        watcher.evaluate()
+        watcher.evaluate() // 执行 watcher get 并 push computed watcher 至 targetStack
       }
       if (Dep.target) {
-        watcher.depend()
+        watcher.depend() // 将 computed watcher 添加至 Ob 时产生额 Dep 里面
+        // 所以里面的任何 Ob数据 更新 都会触发 computedGetter，在调用 evaluate，去重新计算 watcher.value
       }
       return watcher.value
     }
@@ -287,7 +297,7 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
     }
-    vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm)
+    vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm) // 设为 bing 后的函数，或者空函数
   }
 }
 
@@ -304,6 +314,7 @@ function initWatch (vm: Component, watch: Object) {
   }
 }
 
+// 使用 $watcher 构建 watch 属性
 function createWatcher (
   vm: Component,
   expOrFn: string | Function,

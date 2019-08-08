@@ -1,4 +1,8 @@
 /* @flow */
+/**
+ * @file 异步的watcher，在 nextTick 之前的 watcher 会被收集
+ * TODO 应该有去重的功能，检查在哪
+ */
 
 import type Watcher from './watcher'
 import config from '../config'
@@ -160,6 +164,7 @@ function callActivatedHooks (queue) {
  * Push a watcher into the watcher queue.
  * Jobs with duplicate IDs will be skipped unless it's
  * pushed when the queue is being flushed.
+ * 将 watcher push 至 queue，nextTick 时执行 run()
  */
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id

@@ -45,7 +45,7 @@ export function isObject (obj: mixed): boolean %checks {
 /**
  * Get the raw type string of a value, e.g., [object Object].
  */
-const _toString = Object.prototype.toString
+const _toString = Object.prototype.toString // 使用 call 可以避免出现 undefined 和 防止屏蔽属性
 
 export function toRawType (value: any): string {
   return _toString.call(value).slice(8, -1)
