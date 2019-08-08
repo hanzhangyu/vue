@@ -69,13 +69,18 @@ function createKeyToOldIdx (children, beginIdx, endIdx) {
   return map
 }
 
+/**
+ * 绑定 环境相关的 代码
+ * @param backend 对应的属性钩子 与 DOM 操作
+ * @returns {patch} 返回带有 环境代码的 patch 函数
+ */
 export function createPatchFunction (backend) {
   let i, j
   const cbs = {}
 
   const { modules, nodeOps } = backend
 
-  // vnode 的 不同模块的钩子函数，如：ref,attr等
+  // vnode 的 不同模块的钩子函数，非环境相关的（ref, directives）,环境相关的（attr, event等）
   for (i = 0; i < hooks.length; ++i) {
     cbs[hooks[i]] = []
     for (j = 0; j < modules.length; ++j) {

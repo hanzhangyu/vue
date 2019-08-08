@@ -1,4 +1,7 @@
 /* @flow */
+/**
+ * @file 真实 DOM 节点操作函数
+ */
 
 import { namespaceMap } from 'web/util/index'
 

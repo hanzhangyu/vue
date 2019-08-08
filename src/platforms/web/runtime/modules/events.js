@@ -46,6 +46,7 @@ function createOnceHandler (event, handler, capture) {
 // safe to exclude.
 const useMicrotaskFix = isUsingMicroTask && !(isFF && Number(isFF[1]) <= 53)
 
+// 事件绑定函数
 function add (
   name: string,
   handler: Function,
@@ -58,6 +59,8 @@ function add (
   // the solution is simple: we save the timestamp when a handler is attached,
   // and the handler would only fire if the event passed to it was fired
   // AFTER it was attached.
+  // @link https://github.com/vuejs/vue/issues/6566#issuecomment-329057367
+  // 正常情况下我们的事件都会使用这个 fix 绑定，因为 microtask 会比事件冒泡快，子元素触发改动之后，如果父元素在冒泡期间被更新（绑定了新事件）使得触发新元素的事件
   if (useMicrotaskFix) {
     const attachedTimestamp = currentFlushTimestamp
     const original = handler
@@ -66,9 +69,9 @@ function add (
         // no bubbling, should always fire.
         // this is just a safety net in case event.timeStamp is unreliable in
         // certain weird environments...
-        e.target === e.currentTarget ||
+        e.target === e.currentTarget || // 当前元素
         // event is fired after handler attachment
-        e.timeStamp >= attachedTimestamp ||
+        e.timeStamp >= attachedTimestamp || // 旧的绑定事件，即要求事件触发事件 要大于 绑定事件，忽略在 microtask 间隙中绑定的新事件
         // bail for environments that have buggy event.timeStamp implementations
         // #9462 iOS 9 bug: event.timeStamp is 0 after history.pushState
         // #9681 QtWebEngine event.timeStamp is negative value
@@ -91,6 +94,7 @@ function add (
   )
 }
 
+// 解绑函数
 function remove (
   name: string,
   handler: Function,
@@ -105,13 +109,13 @@ function remove (
 }
 
 function updateDOMListeners (oldVnode: VNodeWithData, vnode: VNodeWithData) {
-  if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) {
+  if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) { // 都没有绑定过事件
     return
   }
   const on = vnode.data.on || {}
   const oldOn = oldVnode.data.on || {}
   target = vnode.elm
-  normalizeEvents(on)
+  normalizeEvents(on) // 修正不同平台不支持的事件
   updateListeners(on, oldOn, add, remove, createOnceHandler, vnode.context)
   target = undefined
 }

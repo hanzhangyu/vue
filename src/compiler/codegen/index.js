@@ -186,6 +186,7 @@ function genIfConditions (
   }
 }
 
+// 使用 _l 函数包裹
 export function genFor (
   el: any,
   state: CodegenState,

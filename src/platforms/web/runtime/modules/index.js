@@ -1,3 +1,6 @@
+/**
+ * @file 不同属性变更时，需要触发的钩子函数
+ */
 import attrs from './attrs'
 import klass from './class'
 import events from './events'

@@ -212,7 +212,7 @@ export function parse (
     outputSourceRange: options.outputSourceRange,
     // region 4个 handle
     /**
-     * 匹配到起始标签
+     * 匹配到起始标签，检查并处理 attr
      * @param tag
      * @param attrs
      * @param unary 是否为自闭合标签
@@ -235,6 +235,7 @@ export function parse (
         element.ns = ns
       }
 
+      // 检查 attrs 是否合法
       if (process.env.NODE_ENV !== 'production') {
         if (options.outputSourceRange) {
           element.start = start
@@ -258,6 +259,7 @@ export function parse (
         })
       }
 
+      // 禁止 tag 为 style script
       if (isForbiddenTag(element) && !isServerRendering()) {
         element.forbidden = true
         process.env.NODE_ENV !== 'production' && warn(
@@ -273,6 +275,7 @@ export function parse (
         element = preTransforms[i](element, options) || element
       }
 
+      // 首先处理 v-pre 标记 el.pre
       if (!inVPre) {
         processPre(element)
         if (element.pre) {
@@ -286,9 +289,9 @@ export function parse (
         processRawAttrs(element)
       } else if (!element.processed) {
         // structural directives
-        processFor(element)
+        processFor(element) // 先处理 v-for，所以 v-if 在 for 函数内
         processIf(element)
-        processOnce(element)
+        processOnce(element) // 标记 el.once
       }
 
       if (!root) {
@@ -505,7 +508,7 @@ export function processFor (el: ASTElement) {
   if ((exp = getAndRemoveAttr(el, 'v-for'))) {
     const res = parseFor(exp)
     if (res) {
-      extend(el, res)
+      extend(el, res) // 复制结果至 el
     } else if (process.env.NODE_ENV !== 'production') {
       warn(
         `Invalid v-for expression: ${exp}`,
@@ -516,12 +519,13 @@ export function processFor (el: ASTElement) {
 }
 
 type ForParseResult = {
-  for: string;
-  alias: string;
-  iterator1?: string;
-  iterator2?: string;
+  for: string; // 原对象
+  alias: string; // 第一个参数
+  iterator1?: string; // 第二个
+  iterator2?: string; // 第三个
 };
 
+// 解析出 3个参数
 export function parseFor (exp: string): ?ForParseResult {
   const inMatch = exp.match(forAliasRE)
   if (!inMatch) return
@@ -541,6 +545,7 @@ export function parseFor (exp: string): ?ForParseResult {
   return res
 }
 
+// 标记 v-if v-else v-else-if 三兄弟，只处理 v-if TODO 为什么要分开处理
 function processIf (el) {
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
@@ -560,14 +565,15 @@ function processIf (el) {
   }
 }
 
+// else 前必须要有 if
 function processIfConditions (el, parent) {
   const prev = findPrevElement(parent.children)
-  if (prev && prev.if) {
+  if (prev && prev.if) { // 合法的 推入
     addIfCondition(prev, {
       exp: el.elseif,
       block: el
     })
-  } else if (process.env.NODE_ENV !== 'production') {
+  } else if (process.env.NODE_ENV !== 'production') { // 不合法的警告
     warn(
       `v-${el.elseif ? ('else-if="' + el.elseif + '"') : 'else'} ` +
       `used on element <${el.tag}> without corresponding v-if.`,
@@ -594,6 +600,7 @@ function findPrevElement (children: Array<any>): ASTElement | void {
   }
 }
 
+// 收集嵌套的 三元运算符表达式
 export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
   if (!el.ifConditions) {
     el.ifConditions = []
@@ -810,6 +817,7 @@ function processAttrs (el) {
           if (modifiers.camel && !isDynamic) {
             name = camelize(name)
           }
+          // 为 sync 修饰符 创建 update 事件
           if (modifiers.sync) {
             syncGen = genAssignmentCode(value, `$event`)
             if (!isDynamic) {

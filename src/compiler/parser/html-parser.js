@@ -223,6 +223,7 @@ export function parseHTML (html, options) {
     }
   }
 
+  // 有在 parseStartTag 中捕获到，则在此 格式化 href的换行、调整栈 并 触发钩子
   function handleStartTag (match) {
     const tagName = match.tagName
     const unarySlash = match.unarySlash

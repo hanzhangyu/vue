@@ -9,4 +9,5 @@ import platformModules from 'web/runtime/modules/index'
 // built-in modules have been applied.
 const modules = platformModules.concat(baseModules)
 
+// 获取带有环境代码的 patch 函数
 export const patch: Function = createPatchFunction({ nodeOps, modules })

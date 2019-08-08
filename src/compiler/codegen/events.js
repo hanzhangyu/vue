@@ -37,6 +37,7 @@ const keyNames: { [key: string]: string | Array<string> } = {
 // #4868: modifiers that prevent the execution of the listener
 // need to explicitly return null so that we can determine whether to remove
 // the listener for .once
+// 加入 return null 防止 不符合条件的情况下 把 once 给消费了，如果确认是 不符合条件退出 应该为 不触发once，并且不解绑
 const genGuard = condition => `if(${condition})return null;`
 
 const modifierCode: { [key: string]: string } = {

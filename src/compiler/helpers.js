@@ -66,6 +66,7 @@ function prependModifierMarker (symbol: string, name: string, dynamic?: boolean)
     : symbol + name // mark the event as captured
 }
 
+// 处理 v-bind.sync v-on 以及对应的缩写 所产生的的事件，将该事件绑定至 ast element 中的 events 或者 nativeEvents
 export function addHandler (
   el: ASTElement,
   name: string,

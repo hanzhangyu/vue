@@ -141,7 +141,7 @@ declare type ASTElement = {
   ifProcessed?: boolean;
   elseif?: string;
   else?: true;
-  ifConditions?: ASTIfConditions;
+  ifConditions?: ASTIfConditions; // 第一个为 v-if node 及 block 指向 el 本身，后续为 else 产生的 全部在这里面最后生成 a ? b : c ? d : e 嵌套的三元运算符
 
   for?: string; // v-for
   forProcessed?: boolean;
@@ -154,8 +154,8 @@ declare type ASTElement = {
   classBinding?: string;
   staticStyle?: string;
   styleBinding?: string;
-  events?: ASTElementHandlers;
-  nativeEvents?: ASTElementHandlers;
+  events?: ASTElementHandlers; // 普通的事件
+  nativeEvents?: ASTElementHandlers; // native 修饰符事件
 
   transition?: string | true;
   transitionOnAppear?: boolean;

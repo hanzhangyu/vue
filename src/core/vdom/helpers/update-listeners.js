@@ -51,6 +51,7 @@ export function createFnInvoker (fns: Function | Array<Function>, vm: ?Component
   return invoker
 }
 
+// 更新 真实dom 的事件
 export function updateListeners (
   on: Object,
   oldOn: Object,
