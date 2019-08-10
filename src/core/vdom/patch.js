@@ -575,7 +575,7 @@ export function createPatchFunction (backend) {
     let i
     const data = vnode.data
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
-      i(oldVnode, vnode) // TODO updateChildComponent？
+      i(oldVnode, vnode) // Vnode prepatch 钩子
     }
 
     const oldCh = oldVnode.children

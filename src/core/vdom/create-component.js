@@ -55,6 +55,7 @@ const componentVNodeHooks = {
   prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
     const child = vnode.componentInstance = oldVnode.componentInstance
+    // 更新子 Vnode 的 属性 TODO componentInstance -> child？ 还有为什么要在 patch 前更新这个，Vue更新是至上而下的呀？
     updateChildComponent(
       child,
       options.propsData, // updated props

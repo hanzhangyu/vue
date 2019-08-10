@@ -19,8 +19,8 @@ function updateDirectives (oldVnode: VNodeWithData, vnode: VNodeWithData) {
 }
 
 function _update (oldVnode, vnode) {
-  const isCreate = oldVnode === emptyNode
-  const isDestroy = vnode === emptyNode
+  const isCreate = oldVnode === emptyNode // 新建 vnode
+  const isDestroy = vnode === emptyNode // 销毁 vnode
   const oldDirs = normalizeDirectives(oldVnode.data.directives, oldVnode.context)
   const newDirs = normalizeDirectives(vnode.data.directives, vnode.context)
 
@@ -33,12 +33,14 @@ function _update (oldVnode, vnode) {
     dir = newDirs[key]
     if (!oldDir) {
       // new directive, bind
+      // 新指令触发 bind hook
       callHook(dir, 'bind', vnode, oldVnode)
       if (dir.def && dir.def.inserted) {
-        dirsWithInsert.push(dir)
+        dirsWithInsert.push(dir) // 新指令 触发 inserted hook
       }
     } else {
       // existing directive, update
+      // 已存在该指令，则触发 vnode update hook
       dir.oldValue = oldDir.value
       dir.oldArg = oldDir.arg
       callHook(dir, 'update', vnode, oldVnode)
@@ -48,6 +50,7 @@ function _update (oldVnode, vnode) {
     }
   }
 
+  // 保证在 vnode 所有 bind 之后
   if (dirsWithInsert.length) {
     const callInsert = () => {
       for (let i = 0; i < dirsWithInsert.length; i++) {
@@ -56,11 +59,12 @@ function _update (oldVnode, vnode) {
     }
     if (isCreate) {
       mergeVNodeHook(vnode, 'insert', callInsert)
-    } else {
+    } else { // 只新建指令，此时早已insert，立即触发
       callInsert()
     }
   }
 
+  // 所在组件的 VNode 及其子 VNode 全部更新后调用
   if (dirsWithPostpatch.length) {
     mergeVNodeHook(vnode, 'postpatch', () => {
       for (let i = 0; i < dirsWithPostpatch.length; i++) {
