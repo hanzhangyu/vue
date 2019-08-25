@@ -194,4 +194,8 @@ describe('Filters', () => {
   it('support template string', () => {
     expect(parseFilters('`a | ${b}c` | d')).toBe('_f("d")(`a | ${b}c`)')
   })
+
+  it('support binary operator', () => {
+    expect(parseFilters('(a | b) | c')).toBe('_f("c")((a | b))')
+  })
 })

@@ -6,9 +6,9 @@ import { baseOptions } from 'web/compiler/options'
 describe('optimizer', () => {
   it('simple', () => {
     const ast = parse('<h1 id="section1"><span>hello world</span></h1>', baseOptions)
-    debugger;
+    // debugger;
     optimize(ast, baseOptions)
-    debugger;
+    // debugger;
     expect(ast.static).toBe(true) // h1
     expect(ast.staticRoot).toBe(true)
     expect(ast.children[0].static).toBe(true) // span

@@ -454,6 +454,7 @@ export function resolveAsset (
     return
   }
   const assets = options[type]
+  // region TODO 为什么要区分原型链与本地属性？
   // check local registration variations first
   if (hasOwn(assets, id)) return assets[id]
   const camelizedId = camelize(id)
@@ -462,6 +463,7 @@ export function resolveAsset (
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId]
   // fallback to prototype chain
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId]
+  // endregion
   if (process.env.NODE_ENV !== 'production' && warnMissing && !res) {
     warn(
       'Failed to resolve ' + type.slice(0, -1) + ': ' + id,

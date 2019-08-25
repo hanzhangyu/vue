@@ -33,7 +33,9 @@ import {
 } from 'weex/runtime/recycle-list/render-component-template'
 
 // inline hooks to be invoked on component VNodes during patch
+// 暴露方法给 patch，操控 组件
 const componentVNodeHooks = {
+  // 实例化组件
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
       vnode.componentInstance &&
@@ -52,6 +54,7 @@ const componentVNodeHooks = {
     }
   },
 
+  // TODO
   prepatch (oldVnode: MountedComponentVNode, vnode: MountedComponentVNode) {
     const options = vnode.componentOptions
     const child = vnode.componentInstance = oldVnode.componentInstance
@@ -99,6 +102,7 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
+// 在 render 函数中使用，并没有实例化，只是给vnode绑定了构造函数，最终在 patch 的 init 钩子里面触发 实例化
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
@@ -112,7 +116,7 @@ export function createComponent (
 
   const baseCtor = context.$options._base
 
-  // plain options object: turn it into a constructor
+  // plain options object: turn it into a constructor 每一个组件都包裹一层 extend
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor)
   }
@@ -206,6 +210,7 @@ export function createComponent (
   return vnode
 }
 
+// 为 Vnode 创建组件实例，这也就是所有的组件都实例化了的原因
 export function createComponentInstanceForVnode (
   vnode: any, // we know it's MountedComponentVNode but flow doesn't
   parent: any, // activeInstance in lifecycle state

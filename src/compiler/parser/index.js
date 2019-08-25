@@ -796,7 +796,7 @@ function processAttrs (el) {
       }
       if (bindRE.test(name)) { // v-bind
         name = name.replace(bindRE, '')
-        value = parseFilters(value)
+        value = parseFilters(value) // 在 v-bind 中的 filter
         isDynamic = dynamicArgRE.test(name)
         if (isDynamic) {
           name = name.slice(1, -1)

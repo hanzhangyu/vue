@@ -3,7 +3,7 @@
 import { cached } from 'shared/util'
 import { parseFilters } from './filter-parser'
 
-const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g
+const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g // 这里内部分组的原因就是为了方便取出 match[1]
 const regexEscapeRE = /[-.*+?^${}()|[\]\/\\]/g
 
 const buildRegex = cached(delimiters => {
@@ -37,7 +37,7 @@ export function parseText (
       tokens.push(JSON.stringify(tokenValue)) // 匹配到的文本外层裹一对双引号 ""
     }
     // tag token
-    const exp = parseFilters(match[1].trim())
+    const exp = parseFilters(match[1].trim()) // 在双花括号表达式中的 filter
     tokens.push(`_s(${exp})`) // 为表达式包裹toString函数
     rawTokens.push({ '@binding': exp })
     lastIndex = index + match[0].length // TODO 为什么不直接使用tagRE.lastIndex的值，测试完之后发现的确一致（已提 PR ）
