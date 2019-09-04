@@ -48,7 +48,7 @@ export function generate (
   const state = new CodegenState(options)
   const code = ast ? genElement(ast, state) : '_c("div")'
   return {
-    // TODO 这个不是不推荐使用吗？ 为什么不直接给所有分析出来的变量补上this？
+    // TODO 这个不是不推荐使用吗？ 为什么不直接给所有分析出来的变量补上this？ 不一样。。。只是先在this上找
     // 不过的确复合 【如果是在对性能要求较高的场合，'with'下面的statement语句中的变量，只应该包含这个指定对象的属性。】这一条
     render: `with(this){return ${code}}`,
     staticRenderFns: state.staticRenderFns
