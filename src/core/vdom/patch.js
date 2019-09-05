@@ -441,7 +441,7 @@ export function createPatchFunction (backend) {
     }
 
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-      // region TODO vnode移动之后被设为undefined，为什么呢？有4个cursor表示处理区间，加上直接 移动dom？为什么还需要设为undefined，不打算直接清空整个old数组吗？
+      // region TODO vnode移动之后被设为undefined，为什么呢？有4个cursor表示处理区间，加上直接 移动dom？为什么还需要设为undefined，不打算直接清空整个old数组吗？ 以new vnode去 old vnode中查找，对于new是一次的，old会有多次，所以标记为undefined表示已被匹配了
       if (isUndef(oldStartVnode)) {
         oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
       } else if (isUndef(oldEndVnode)) {

@@ -1,7 +1,6 @@
 /* @flow */
 /**
  * @file 异步的watcher，在 nextTick 之前的 watcher 会被收集
- * TODO 应该有去重的功能，检查在哪
  */
 
 import type Watcher from './watcher'
@@ -168,7 +167,7 @@ function callActivatedHooks (queue) {
  */
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
-  if (has[id] == null) {
+  if (has[id] == null) { // 去重
     has[id] = true
     if (!flushing) {
       queue.push(watcher)
