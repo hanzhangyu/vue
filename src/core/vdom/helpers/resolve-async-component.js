@@ -16,6 +16,7 @@ import { createEmptyVNode } from 'core/vdom/vnode'
 import { currentRenderingInstance } from 'core/instance/render'
 
 function ensureCtor (comp: any, base) {
+  // vue 组件肯定会导出 default 的，所以对于 esm 需要找到 default
   if (
     comp.__esModule ||
     (hasSymbol && comp[Symbol.toStringTag] === 'Module')
@@ -88,6 +89,7 @@ export function resolveAsyncComponent (
       }
     }
 
+    // 首次载入并缓存
     const resolve = once((res: Object | Class<Component>) => {
       // cache resolved
       factory.resolved = ensureCtor(res, baseCtor)
